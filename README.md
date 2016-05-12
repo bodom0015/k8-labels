@@ -1,4 +1,4 @@
-# Kubernetes Node Labeler
+# Kubernetes Node Label Synchronizer
 This is a simple Groovy script that slurps up a JSON map of Kubernetes node hostname/IP -> role.
 The script then uses `kubectl label` to apply the roles to Kubernetes nodes as labels.
 
