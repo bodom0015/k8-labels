@@ -4,39 +4,85 @@
 
 import groovy.json.*
 
-// Read in our roles from the fs
-def roles = new File("roles.json")
+/** Helper function to apply a CLI option or use the default value */
+def getArgOrDefault(def arg, def defaultValue) {
+  if (!arg) {
+    return defaultValue;
+  }
 
-// Parse the JSON from the file
-def object = new JsonSlurper().parseText(roles.text)
-
-// Make sure our test case passes
-assert object instanceof Map
-
-// Test String values
-assert object["192.168.100.64"] instanceof String
-assert object["192.168.100.64"] == "ingress"
-
-assert object["192.168.100.65"] instanceof String
-assert object["192.168.100.65"] == "compute"
-
-assert object["192.168.100.66"] instanceof String
-assert object["192.168.100.66"] == "compute"
-
-assert object["192.168.100.89"] instanceof String
-assert object["192.168.100.89"] == "storage"
-
-assert object["192.168.100.156"] instanceof String
-assert object["192.168.100.156"] == "storage"
-
-println "Map parsed successfully!\n"
-
-object.each{
-  println "Applying " + it
-  def (name, role) = it.toString().tokenize( '=' )
-  println name + " -> " + role
-  def command = String.format("kubectl label %s ndslabs-role=%s --overwrite", name, role)
-  println "Executing: " + command + "\n"
+  return arg;
 }
 
-println "Map applied successfully!\n"
+// Define what roles we expect to see / apply for validation
+def acceptedRoles = [
+  'ingress',
+  'compute',
+  'etcd',
+  'storage'
+];
+
+// Parse command line to retrieve arguments
+def cli = new CliBuilder(usage:'roles.groovy -f path/to/roles.json')
+cli.h(longOpt:'help', args:0, 'print script usage')
+cli.f(longOpt:'file', args:1, argName:'path/to/roles.json',
+       'provide a JSON file of roles to apply - default=roles.json')
+cli.o(longOpt:'overwrite', args:0, 'overwrite any previous role present')
+cli.l(longOpt:'label-name', args:1, argName:'target label', 
+       'provide a target label name that the JSON should be applied under - default=ndslabs-role')
+
+def options = cli.parse(args)
+assert options
+
+if (options.h) {
+  cli.usage()
+  return
+}
+
+// Read provided CLI arguments out of parsed object
+def filename = getArgOrDefault(options.f, 'roles.json')
+def overwrite = getArgOrDefault(options.o, false)
+def targetLabel = getArgOrDefault(options.l, 'ndslabs-role')
+
+def overwriteLabel = overwrite ? '--overwrite' : ''
+
+assert filename
+assert targetLabel
+
+// Parse the JSON from the file
+def object = new JsonSlurper().parseText(new File(filename).text)
+
+def roles = new LinkedHashMap();
+
+// Validate our JSON map first
+assert object instanceof Map
+object.each{
+  def (name, role) = it.toString().tokenize( '=' )
+  
+  if (!acceptedRoles.contains(role)) {
+    println String.format("Skipping unrecognized role: %s -> %s", name, role)
+    return
+  }
+ 
+  // Cache this value in our lookup table
+  roles[name] = role;
+}
+
+def count = 0
+
+// Then apply the role's we've validated using 'kubectl label'
+roles.each{ name, role ->
+  def command = String.format("kubectl label %s %s=%s %s", name, targetLabel, role, overwriteLabel)
+
+  def sout = new StringBuffer(), serr = new StringBuffer()
+
+  println "Executing: " + command
+/*  def proc = command.execute()
+  proc.consumeProcessOutput(sout, serr)
+  proc.waitForKill(1000)
+  println "out> $sout"
+  println "err> $serr"*/
+
+  count++;
+}
+
+println "\n" + count + " roles applied successfully!"
