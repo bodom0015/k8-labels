@@ -58,7 +58,7 @@ assert object instanceof Map
 object.each{
   def (name, role) = it.toString().tokenize( '=' )
   
-  if (!acceptedRoles.contains(role)) {
+  if (role && !acceptedRoles.contains(role)) {
     println String.format("Skipping unrecognized role: %s -> %s", name, role)
     return
   }
@@ -71,16 +71,23 @@ def count = 0
 
 // Then apply the role's we've validated using 'kubectl label'
 roles.each{ name, role ->
-  def command = String.format("kubectl label %s %s=%s %s", name, targetLabel, role, overwriteLabel)
+  def command
+  if (role == null) {
+    // Remove this label if no value is specified
+    command = String.format("kubectl label %s %s-", name, targetLabel)
+  } else {
+    // Add / overwrite this label if a value was specified
+    command = String.format("kubectl label %s %s=%s %s", name, targetLabel, role, overwriteLabel)
+  }
 
   def sout = new StringBuffer(), serr = new StringBuffer()
 
   println "Executing: " + command
-/*  def proc = command.execute()
+  def proc = command.execute()
   proc.consumeProcessOutput(sout, serr)
   proc.waitForKill(1000)
   println "out> $sout"
-  println "err> $serr"*/
+  println "err> $serr"
 
   count++;
 }
