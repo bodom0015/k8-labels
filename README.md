@@ -13,10 +13,10 @@ git clone https://github.com/bodom0015/k8-labels.git
 cd k8-labels/
 ```
 
-### About Grapes
-"Grapes" is Groovy dependency grabbing system. The first time Docker runs this image, it may take a minute to download all required JARs. They will be cached in the `.grapes` folder alongside this script, making subsequent runs of the script much faster.
+### Groovy Grapes
+"Grapes" is Groovy's dependency grabbing system which functions like an inline Maven package declaration. The first time Docker runs this image, it may take a minute to download all required JARs. They will be cached in the `.grapes` folder alongside this script, making subsequent runs of the script much faster.
 
-To force dependencies to re-download, you can delete the `.grapes` folder before running the Docker image.
+To clear the cached dependencies and force them to re-download, you can delete the contents of the `.grapes` folder before running the Docker image.
 
 ## Usage
 You can run the **roles.groovy** script using the following Docker command:
