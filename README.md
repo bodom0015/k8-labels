@@ -13,6 +13,8 @@ git clone https://github.com/bodom0015/k8-labels.git
 cd k8-labels/
 ```
 
+This git repo includes the **roles.groovy** node labeler script.
+
 ### Groovy Grapes
 "Grapes" is Groovy's dependency grabbing system which functions like an inline Maven package declaration. The first time Docker runs this image, it may take a minute to download all required JARs. They will be cached in the `.grapes` folder alongside this script, making subsequent runs of the script much faster.
 
@@ -63,3 +65,10 @@ Executing: kubectl label 192.168.100.89 ndslabs-role=storage --overwrite
  
 Map applied successfully!
 ```
+
+## Future Plans
+* Fix script output
+* Add option for --overwrite instead of assuming
+* Add support for multiple simultaneous label applications?
+* Parameterize the label applied to each node?
+* Parameterize the name of the input file?
