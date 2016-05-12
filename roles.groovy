@@ -42,8 +42,8 @@ def defaultLabel = 'ndslabs-role'
 
 // Define what roles we expect to see, where to find them, and which label to post them under
 def targetLabel = getArgOrDefault(options.l, defaultLabel)
-def filename = getArgOrDefault(options.f, targetLabel + '.json')
-def validateFilename = getArgOrDefault(options.v, 'validate.' + targetLabel + '.json')
+def filename = getArgOrDefault(options.f, 'specs/' + targetLabel + '.json')
+def validateFilename = getArgOrDefault(options.v, 'specs/validate.' + targetLabel + '.json')
 
 def overwriteLabel = overwrite ? '--overwrite' : ''
 
