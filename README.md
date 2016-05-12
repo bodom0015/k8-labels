@@ -1,5 +1,5 @@
 # Kubernetes Node Labeler
-This is a simple Groovy script that slurps up a JSON map of hostname/IP -> role.
+This is a simple Groovy script that slurps up a JSON map of Kubernetes node hostname/IP -> role.
 The script then uses `kubectl label` to apply the roles to Kubernetes nodes as labels.
 
 ## Prerequisites
@@ -19,12 +19,14 @@ cd k8-labels/
 To force dependencies to re-download, you can delete the `.grapes` folder before running the Docker image.
 
 ## Usage
-You can run the roles.groovy script using the following Docker command:
+You can run the **roles.groovy** script using the following Docker command:
 ```bash
-docker run -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
+docker run --rm -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
 ```
 ### Input
-The input file (**roles.json** should be formatted as follows:
+The **roles.json** input file should sit alongside the script.
+
+The input file should be formatted as follows:
 ```javascript
 {
   "nodeName": "nodeRole",
@@ -36,7 +38,7 @@ The input file (**roles.json** should be formatted as follows:
 
 ### Output
 ```bash
-core@lambert-test ~/groovy $ docker run -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
+core@lambert-test ~/groovy $ docker run --rm -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
 Map parsed successfully!
  
 Applying 192.168.100.156=storage
