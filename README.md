@@ -14,7 +14,7 @@ cd k8-labels/
 ```
 
 ### About Grapes
-"Grapes" is Groovy dependency grabbing system. The first time Docker runs this image, it may take a minute to download all required JARs. They will be cached in the `.grapes` folder alongside this script.
+"Grapes" is Groovy dependency grabbing system. The first time Docker runs this image, it may take a minute to download all required JARs. They will be cached in the `.grapes` folder alongside this script, making subsequent runs of the script much faster.
 
 To force dependencies to re-download, you can delete the `.grapes` folder before running the Docker image.
 
