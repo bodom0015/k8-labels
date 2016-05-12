@@ -1,0 +1,6 @@
+[
+  "ingresslb",
+  "compute",
+  "etcd",
+  "storage"
+]

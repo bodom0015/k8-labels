@@ -4,6 +4,8 @@
 
 import groovy.json.*
 
+def KUBECTL_BASE_PATH = '/opt/bin/'
+
 /** Helper function to apply a CLI option or use the default value */
 def getArgOrDefault(def arg, def defaultValue) {
   if (!arg) {
@@ -13,22 +15,17 @@ def getArgOrDefault(def arg, def defaultValue) {
   return arg;
 }
 
-// Define what roles we expect to see / apply for validation
-def acceptedRoles = [
-  'ingress',
-  'compute',
-  'etcd',
-  'storage'
-];
-
 // Parse command line to retrieve arguments
 def cli = new CliBuilder(usage:'roles.groovy -f path/to/roles.json')
 cli.h(longOpt:'help', args:0, 'print script usage')
 cli.f(longOpt:'file', args:1, argName:'path/to/roles.json',
-       'provide a JSON file of roles to apply - default=roles.json')
+       'provide a JSON file of label values to apply')
+cli.v(longOpt:'validate', args:1, argName:'path/to/roles.json',
+       'provide a JSON file of valid values')
 cli.o(longOpt:'overwrite', args:0, 'overwrite any previous role present')
 cli.l(longOpt:'label-name', args:1, argName:'target label', 
        'provide a target label name that the JSON should be applied under - default=ndslabs-role')
+cli._(longOpt:'force', args:0, 'force the label application (WARNING: this skips validation)')
 
 def options = cli.parse(args)
 assert options
@@ -39,17 +36,33 @@ if (options.h) {
 }
 
 // Read provided CLI arguments out of parsed object
-def filename = getArgOrDefault(options.f, 'roles.json')
 def overwrite = getArgOrDefault(options.o, false)
-def targetLabel = getArgOrDefault(options.l, 'ndslabs-role')
+
+def defaultLabel = 'ndslabs-role'
+
+// Define what roles we expect to see, where to find them, and which label to post them under
+def targetLabel = getArgOrDefault(options.l, defaultLabel)
+def filename = getArgOrDefault(options.f, targetLabel + '.json')
+def validateFilename = getArgOrDefault(options.v, 'validate.' + targetLabel + '.json')
 
 def overwriteLabel = overwrite ? '--overwrite' : ''
 
 assert filename
 assert targetLabel
+assert validateFilename
 
 // Parse the JSON from the file
 def object = new JsonSlurper().parseText(new File(filename).text)
+
+def acceptedValues = null
+def validate = new File(validateFilename)
+if (validate.exists()) {
+  acceptedValues = new JsonSlurper().parseText(validate.text)
+} else if (!options.force) {
+  println String.format("ERROR: Validation file %s was not found.", validateFilename)
+  println "Please provide a validation file, or specify --force to skip validation."
+  return
+}
 
 def roles = new LinkedHashMap();
 
@@ -58,7 +71,7 @@ assert object instanceof Map
 object.each{
   def (name, role) = it.toString().tokenize( '=' )
   
-  if (role && !acceptedRoles.contains(role)) {
+  if (role && acceptedValues && !acceptedValues.contains(role)) {
     println String.format("Skipping unrecognized role: %s -> %s", name, role)
     return
   }
@@ -67,29 +80,20 @@ object.each{
   roles[name] = role;
 }
 
-def count = 0
-
 // Then apply the role's we've validated using 'kubectl label'
 roles.each{ name, role ->
-  def command
+  // Build up the command we plan to execute
+  def command = KUBECTL_BASE_PATH + 'kubectl label nodes'
   if (role == null) {
     // Remove this label if no value is specified
-    command = String.format("kubectl label %s %s-", name, targetLabel)
+    command += String.format(" %s %s-", name, targetLabel)
   } else {
     // Add / overwrite this label if a value was specified
-    command = String.format("kubectl label %s %s=%s %s", name, targetLabel, role, overwriteLabel)
+    command += String.format(" %s %s=%s %s", name, targetLabel, role, overwriteLabel)
   }
 
-  def sout = new StringBuffer(), serr = new StringBuffer()
-
-  println "Executing: " + command
-  def proc = command.execute()
-  proc.consumeProcessOutput(sout, serr)
-  proc.waitForKill(1000)
-  println "out> $sout"
-  println "err> $serr"
-
-  count++;
+  // Execute the kubectl command we just built
+  println command
+  command.execute().waitForProcessOutput(System.out, System.err)
+  println ""
 }
-
-println "\n" + count + " roles applied successfully!"
