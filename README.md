@@ -23,7 +23,7 @@ To clear the cached dependencies and force them to re-download, you can delete t
 ## Usage
 You can run the **roles.groovy** script using the following Docker command:
 ```bash
-docker run --rm --net host -v /opt:/opt -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy [-f <jsonFile>] [-l <labelName>] [-o]
+docker run --rm --net=host -v /opt:/opt -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy [-f <jsonFile>] [-l <labelName>] [-o]
 ```
 
 The script will read the JSON file (-f) containing a mapping of node name -> value and apply the desired label (-l) to each node.
@@ -52,7 +52,7 @@ The input file should be formatted as follows:
 
 ### Output
 ```bash
-core@willis8-k8-test-1 ~/k8-labels $ docker run --rm -v /opt:/opt --net=host -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy -l test-label
+core@willis8-k8-test-1 ~/k8-labels $ docker run --rm --net=host -v /opt:/opt -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy -l test-label
 Skipping unrecognized role: 192.168.100.156 -> g
 /opt/bin/kubectl label nodes 192.168.100.157 test-label=a 
 Error from server: nodes "192.168.100.157" not found
