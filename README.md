@@ -67,7 +67,7 @@ Map applied successfully!
 ```
 
 ## Future Plans
-* ~~Fix script output~~
+* ~~Clean up script output~~
 * ~~Add option for --overwrite instead of assuming~~
 * ~~Parameterize the label applied to each node~~
 * ~~Parameterize the name of the input file~~
