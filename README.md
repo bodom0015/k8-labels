@@ -9,7 +9,7 @@ The script then uses `kubectl label` to apply the roles to Kubernetes nodes as l
 Clone this git repo:
 
 ```bash
-git clone https://github.com/bodom0015/k8-labels.git
+git clone https://github.com/nds-org/k8-labels.git
 cd k8-labels/
 ```
 
