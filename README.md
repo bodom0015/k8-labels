@@ -23,8 +23,17 @@ To clear the cached dependencies and force them to re-download, you can delete t
 ## Usage
 You can run the **roles.groovy** script using the following Docker command:
 ```bash
-docker run --rm -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
+docker run --rm -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy [-f <jsonFile>] [-l <labelName>] [-o]
 ```
+
+The script will read the JSON file (-f) containing a mapping of node name -> value and apply the desired label (-l) to each node.
+The user can also choose to overwrite (-o) the specified label if it already exists.
+
+Arguments:
+* -f : The JSON file containing the map of roles to apply to each node (default = **roles.json**)
+* -l : The label name to use when applying these values (default = **ndslabs-role**)
+* -o : Force overwrite of the label if it already exists (default = **false**)
+
 ### Input
 The **roles.json** input file should sit alongside the script.
 
@@ -40,30 +49,15 @@ The input file should be formatted as follows:
 
 ### Output
 ```bash
-core@lambert-test ~/groovy $ docker run --rm -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy
-Map parsed successfully!
- 
-Applying 192.168.100.156=storage
-192.168.100.156 -> storage
-Executing: kubectl label 192.168.100.156 ndslabs-role=storage --overwrite
- 
-Applying 192.168.100.64=ingress
-192.168.100.64 -> ingress
-Executing: kubectl label 192.168.100.64 ndslabs-role=ingress --overwrite
- 
-Applying 192.168.100.65=compute
-192.168.100.65 -> compute
-Executing: kubectl label 192.168.100.65 ndslabs-role=compute --overwrite
- 
-Applying 192.168.100.66=compute
-192.168.100.66 -> compute
-Executing: kubectl label 192.168.100.66 ndslabs-role=compute --overwrite
- 
-Applying 192.168.100.89=storage
-192.168.100.89 -> storage
-Executing: kubectl label 192.168.100.89 ndslabs-role=storage --overwrite
- 
-Map applied successfully!
+core@lambert-test ~/groovy $ docker run -v $(pwd):/source -v $(pwd)/.grapes:/graperoot -w /source webratio/groovy roles.groovy -f roles.json -l label-maker -o
+Skipping unrecognized role: 192.168.100.157 -> asdf
+Executing: kubectl label 192.168.100.156 label-maker=storage --overwrite
+Executing: kubectl label 192.168.100.64 label-maker=ingress --overwrite
+Executing: kubectl label 192.168.100.65 label-maker=compute --overwrite
+Executing: kubectl label 192.168.100.66 label-maker=compute --overwrite
+Executing: kubectl label 192.168.100.89 label-maker=storage --overwrite
+
+5 roles applied successfully!
 ```
 
 ## Future Plans
