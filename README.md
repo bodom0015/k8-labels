@@ -76,3 +76,4 @@ node "192.168.100.89" labeled
 * ~~Parameterize the label applied to each node~~
 * ~~Parameterize the name of the input file~~
 * Add support for multiple simultaneous label applications?
+* Pass in other options to kubectl? (--server at least)
